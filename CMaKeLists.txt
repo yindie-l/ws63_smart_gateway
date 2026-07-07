@@ -1,0 +1,43 @@
+
+
+if(DEFINED CONFIG_RAINDROP_MODULE)
+    add_subdirectory_if_exist(raindrop_module)
+endif()
+
+if(DEFINED CONFIG_SERVO_MODULE)
+    add_subdirectory_if_exist(servo_module)
+endif()
+
+if(DEFINED CONFIG_ENVIRONMENT_MODULE)
+    add_subdirectory_if_exist(environment_module)
+endif()
+
+if(DEFINED CONFIG_RADAR_MODULE)
+    add_subdirectory_if_exist(radar_module)
+endif()
+
+if(DEFINED CONFIG_PIR_MODULE)
+    add_subdirectory_if_exist(pir_module)
+endif()
+
+if(DEFINED CONFIG_OLED_MODULE)
+    add_subdirectory_if_exist(oled_module)
+endif()
+
+if(DEFINED CONFIG_MAIN)
+    add_subdirectory_if_exist(main)
+endif()
+
+if(DEFINED CONFIG_BEEP_MODULE)
+    add_subdirectory_if_exist(beep_module)
+endif()
+
+if(DEFINED CONFIG_BH1750_MODULE)
+    add_subdirectory_if_exist(bh1750_module)
+endif()
+
+# if(DEFINED CONFIG_MQTT_MODULE)
+#     add_subdirectory_if_exist(mqtt_module)
+# endif()
+add_subdirectory_if_exist(mqtt_module)
+set(SOURCES "${SOURCES}" PARENT_SCOPE)

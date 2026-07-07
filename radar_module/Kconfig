@@ -1,0 +1,19 @@
+#===============================================================================
+# @brief    Kconfig file.
+# Copyright (c) @CompanyNameMagicTag 2023-2023. All rights reserved.
+#===============================================================================
+config RADAR_STA
+    bool
+    prompt "Support RADAR_STA Sample."
+    default n
+    depends on RADAR_MODULE
+    help
+        This option means support RADAR_STA Sample.
+
+config RADAR_SOFTAP
+    bool
+    prompt "Support RADAR_SOFTAP Sample."
+    default n
+    depends on RADAR_MODULE
+    help
+        This option means support RADAR_SOFTAP Sample.

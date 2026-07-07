@@ -1,0 +1,4 @@
+set(
+    SOURCES "${SOURCES}" "${CMAKE_CURRENT_SOURCE_DIR}/pir.c" "${CMAKE_CURRENT_SOURCE_DIR}/pir_test.c"
+    PARENT_SCOPE
+)

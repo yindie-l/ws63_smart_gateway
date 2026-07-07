@@ -1,0 +1,94 @@
+
+config RAINDROP_MODULE
+    bool
+    prompt "RAINDROP_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of RAINDROP_MODULE.
+if RAINDROP_MODULE_SAMPLE
+menu "ADC Sample Configuration"
+    osource "application/samples/ws63_dswdbd/raindrop_module/Kconfig"
+endmenu
+endif
+
+config SERVO_MODULE
+    bool
+    prompt "SERVO_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of SERVO_MODULE.
+
+config ENVIRONMENT_MODULE
+    bool
+    prompt "ENIRONMENT_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of ENIRONMENT_MODULE.
+
+config RADAR_MODULE
+    bool
+    prompt "RADAR_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of ENIRONMENT_MODULE.
+if RADAR_MODULE
+    osource "application/samples/ws63_dswdbd/radar_module/Kconfig"
+endif
+
+config PIR_MODULE
+    bool
+    prompt "PIR_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of PIR_MODULE.
+
+config OLED_MODULE
+    bool
+    prompt "OLED_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of OLED_MODULE.
+
+config MAIN
+    bool
+    prompt "MAIN."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of MAIN
+if MAIN
+menu "ADC Configuration"
+    osource "application/samples/ws63_dswdbd/main/Kconfig"
+endmenu
+endif
+
+config BEEP_MODULE
+    bool
+    prompt "BEEP_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of BEEP_MODULE
+
+config BH1750_MODULE
+    bool
+    prompt "BH1750_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of BH1750_MODULE
+
+config MQTT_MODULE
+    bool
+    prompt "MQTT_MODULE."
+    default n
+    depends on ENABLE_WS63_DSWDBD
+    help
+        This option means enable the sample of MQTT_MODULE
+        

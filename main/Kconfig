@@ -1,0 +1,36 @@
+#===============================================================================
+# @brief    Kconfig file.
+# Copyright (c) HiSilicon (Shanghai) Technologies Co., Ltd. 2023-2023. All rights reserved.
+#===============================================================================
+config HADC_SELF_CALIBRATION
+    bool
+    prompt "HADC calibration, or use record code."
+    default y
+    depends on ADC_USING_V152
+
+config HADC_SAMPLE
+    bool
+    prompt "Enable HADC sample."
+    default y
+    depends on ADC_USING_V152
+
+config TIMING_SAMPLE
+    bool
+    prompt "Create timing sample irq."
+    default n
+
+
+config ADC_SUPPORT_AUTO_SCAN
+    bool
+    prompt "Enable ADC auto scan support"
+    default y
+    help
+      Enable automatic scanning mode for ADC channels.
+
+config ADC_SUPPORT_LONG_SAMPLE
+    bool
+    prompt "Enable ADC long sample time support"
+    default y
+    depends on ADC_SUPPORT_AUTO_SCAN
+    help
+      Enable long sampling time configuration for ADC scan.
