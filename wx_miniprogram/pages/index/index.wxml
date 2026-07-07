@@ -1,0 +1,165 @@
+<!-- pages/index/index.wxml - 环境监测主页 -->
+<!-- 对应接口字段: temp, humidity, rain, hanger, pir, light（硬编码） -->
+
+<view class="page-container">
+
+<!-- 顶部连接状态栏 -->
+<view class="status-bar {{mqttConnected ? 'connected' : 'disconnected'}}">
+  <view class="status-dot {{mqttConnected ? 'dot-online' : 'dot-offline'}}"></view>
+  <text class="status-text">{{mqttConnected ? 'MQTT已连接' : '未连接'}}</text>
+  <view wx:if="{{!mqttConnected && !connecting}}" class="reconnect-btn" bindtap="onReconnect">
+    <text>点击重连</text>
+  </view>
+  <view wx:if="{{connecting}}" class="connecting-text">
+    <text>正在连接Broker...</text>
+  </view>
+</view>
+
+<!-- 数据卡片区域 -->
+<view class="cards-container">
+
+  <!-- 温度卡片 -->
+  <view class="sensor-card temp-card">
+    <view class="card-glow"></view>
+    <view class="card-header">
+      <view class="card-icon temp-icon">
+        <text class="icon-text">🌡</text>
+      </view>
+      <text class="card-title">温度</text>
+      <text wx:if="{{tempAbnormal}}" class="abnormal-tag">传感器异常</text>
+    </view>
+    <view class="card-value-wrapper">
+      <text class="card-value temp-value">{{temperature}}</text>
+      <text class="card-unit">°C</text>
+    </view>
+    <view class="card-trend">
+      <text wx:if="{{tempTrend === 1}}" class="trend-up">↑ 上升中</text>
+      <text wx:elif="{{tempTrend === -1}}" class="trend-down">↓ 下降中</text>
+      <text wx:else class="trend-stable">→ 稳定</text>
+    </view>
+    <view class="card-progress">
+      <view class="progress-bg">
+        <view class="progress-fill temp-fill" style="width: {{temperature === '--' ? 0 : Math.min(100, (temperature - 0) / 50 * 100)}}%"></view>
+      </view>
+    </view>
+    <view class="ripple ripple-1"></view>
+    <view class="ripple ripple-2"></view>
+  </view>
+
+  <!-- 湿度卡片 -->
+  <view class="sensor-card humi-card">
+    <view class="card-glow"></view>
+    <view class="card-header">
+      <view class="card-icon humi-icon">
+        <text class="icon-text">💧</text>
+      </view>
+      <text class="card-title">湿度</text>
+    </view>
+    <view class="card-value-wrapper">
+      <text class="card-value humi-value">{{humidity}}</text>
+      <text class="card-unit">%</text>
+    </view>
+    <view class="card-trend">
+      <text wx:if="{{humiTrend === 1}}" class="trend-up">↑ 上升中</text>
+      <text wx:elif="{{humiTrend === -1}}" class="trend-down">↓ 下降中</text>
+      <text wx:else class="trend-stable">→ 稳定</text>
+    </view>
+    <view class="card-progress">
+      <view class="progress-bg">
+        <view class="progress-fill humi-fill" style="width: {{humidity === '--' ? 0 : Math.min(100, humidity)}}%"></view>
+      </view>
+    </view>
+    <view class="ripple ripple-1"></view>
+    <view class="ripple ripple-2"></view>
+  </view>
+
+  <!-- 雨量卡片（0/1 开关量） -->
+  <view class="sensor-card rain-card {{rain === 1 ? 'rain-active' : ''}}">
+    <view class="card-glow"></view>
+    <view class="card-header">
+      <view class="card-icon rain-icon">
+        <text class="icon-text">{{rain === 1 ? '🌧' : '☀️'}}</text>
+      </view>
+      <text class="card-title">雨量监测</text>
+    </view>
+    <view class="card-value-wrapper">
+      <text class="card-value rain-value">{{rainText}}</text>
+    </view>
+    <view class="rain-status">
+      <view class="rain-indicator {{rain === 1 ? 'rain-on' : 'rain-off'}}">
+        <view class="rain-dot"></view>
+      </view>
+      <text class="rain-label">{{rain === 1 ? '检测到降雨！请及时收衣' : '当前无降雨'}}</text>
+    </view>
+    <view class="ripple ripple-1"></view>
+    <view class="ripple ripple-2"></view>
+  </view>
+
+  <!-- 衣架状态卡片 -->
+  <view class="sensor-card hanger-card">
+    <view class="card-glow"></view>
+    <view class="card-header">
+      <view class="card-icon hanger-icon">
+        <text class="icon-text">👕</text>
+      </view>
+      <text class="card-title">衣架状态</text>
+    </view>
+    <view class="card-value-wrapper">
+      <text class="card-value hanger-value">{{hangerText}}</text>
+    </view>
+    <view class="hanger-status">
+      <view class="hanger-indicator {{hanger === 'extended' ? 'hanger-out' : 'hanger-in'}}">
+        <view class="hanger-dot"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 红外感应卡片 -->
+  <view class="sensor-card pir-card">
+    <view class="card-glow"></view>
+    <view class="card-header">
+      <view class="card-icon pir-icon">
+        <text class="icon-text">{{pir === 1 ? '🚶' : '🛋'}}</text>
+      </view>
+      <text class="card-title">人体感应</text>
+    </view>
+    <view class="card-value-wrapper">
+      <text class="card-value pir-value">{{pirText}}</text>
+    </view>
+    <view class="pir-status">
+      <view class="pir-indicator {{pir === 1 ? 'pir-active' : 'pir-idle'}}">
+        <view class="pir-dot"></view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="sensor-card light-card">
+    <view class="card-glow"></view>
+    <view class="card-header">
+      <view class="card-icon light-icon">
+        <text class="icon-text">💡</text>
+      </view>
+      <text class="card-title">光强</text>
+    </view>
+    <view class="card-value-wrapper">
+      <text class="card-value light-value">{{light}}</text>
+      <text class="card-unit">lx</text>
+    </view>
+    <view class="card-progress">
+      <view class="progress-bg">
+        <view class="progress-fill light-fill" style="width: {{lightPercent}}%"></view>
+      </view>
+    </view>
+    <view class="ripple ripple-1"></view>
+    <view class="ripple ripple-2"></view>
+  </view>
+
+</view>
+
+<!-- 底部更新时间 -->
+<view class="update-time">
+  <text class="update-label">最后更新</text>
+  <text class="update-value">{{lastUpdate || '--:--:--'}}</text>
+</view>
+
+</view>

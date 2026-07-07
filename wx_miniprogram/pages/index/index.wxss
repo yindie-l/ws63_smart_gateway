@@ -1,0 +1,478 @@
+/* pages/index/index.wxss - 环境监测主页（蓝白清新配色） */
+
+/* ============ 页面容器 ============ */
+.page-container {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #e8f0fe 0%, #f0f5ff 40%, #f5f8ff 100%);
+    padding: 20rpx 30rpx;
+    box-sizing: border-box;
+  }
+  
+  /* ============ 状态栏 ============ */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18rpx 30rpx;
+    margin-bottom: 30rpx;
+    border-radius: 40rpx;
+    background: #ffffff;
+    box-shadow: 0 4rpx 20rpx rgba(74, 144, 217, 0.08);
+    transition: all 0.5s ease;
+  }
+  
+  .status-bar.connected {
+    border: 1rpx solid rgba(74, 144, 217, 0.15);
+  }
+  
+  .status-bar.disconnected {
+    border: 1rpx solid rgba(245, 34, 45, 0.15);
+  }
+  
+  .status-dot {
+    width: 16rpx;
+    height: 16rpx;
+    border-radius: 50%;
+    margin-right: 16rpx;
+  }
+  
+  .dot-online {
+    background: #52c41a;
+    box-shadow: 0 0 12rpx rgba(82, 196, 26, 0.4);
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+  
+  .dot-offline {
+    background: #f5222d;
+    box-shadow: 0 0 10rpx rgba(245, 34, 45, 0.3);
+  }
+  
+  .status-text {
+    font-size: 26rpx;
+    color: #4a5568;
+    flex: 1;
+  }
+  
+  .reconnect-btn {
+    padding: 8rpx 24rpx;
+    border-radius: 30rpx;
+    background: rgba(74, 144, 217, 0.1);
+    border: 1rpx solid rgba(74, 144, 217, 0.25);
+  }
+  
+  .reconnect-btn text {
+    font-size: 24rpx;
+    color: #4a90d9;
+  }
+  
+  .connecting-text text {
+    font-size: 24rpx;
+    color: #fa8c16;
+    animation: blink 1s ease-in-out infinite;
+  }
+  
+  @keyframes dotPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.3); }
+  }
+  
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  
+  /* ============ 卡片容器 ============ */
+  .cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24rpx;
+  }
+  
+  /* ============ 传感器卡片 ============ */
+  .sensor-card {
+    position: relative;
+    padding: 36rpx 40rpx;
+    border-radius: 28rpx;
+    background: #ffffff;
+    border: 1rpx solid #e8edf5;
+    box-shadow: 0 4rpx 20rpx rgba(74, 144, 217, 0.06);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .sensor-card:active {
+    transform: scale(0.98);
+  }
+  
+  .card-glow {
+    display: none;
+  }
+  
+  /* 卡片头部 */
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20rpx;
+  }
+  
+  .card-icon {
+    width: 56rpx;
+    height: 56rpx;
+    border-radius: 18rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16rpx;
+  }
+  
+  .temp-icon {
+    background: rgba(245, 34, 45, 0.08);
+  }
+  
+  .humi-icon {
+    background: rgba(74, 144, 217, 0.08);
+  }
+  
+  .rain-icon {
+    background: rgba(74, 144, 217, 0.08);
+  }
+  
+  .hanger-icon {
+    background: rgba(114, 46, 209, 0.08);
+  }
+  
+  .pir-icon {
+    background: rgba(250, 140, 22, 0.08);
+  }
+  
+  /* 新增光强图标背景 */
+  .light-icon {
+    background: rgba(250, 173, 20, 0.08);
+  }
+  
+  .icon-text {
+    font-size: 30rpx;
+  }
+  
+  .card-title {
+    font-size: 28rpx;
+    color: #4a5568;
+    letter-spacing: 2rpx;
+    font-weight: 500;
+  }
+  
+  /* 数值显示 */
+  .card-value-wrapper {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 12rpx;
+  }
+  
+  .card-value {
+    font-size: 72rpx;
+    font-weight: 700;
+    letter-spacing: 2rpx;
+    font-variant-numeric: tabular-nums;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .temp-value {
+    color: #f5222d;
+  }
+  
+  .humi-value {
+    color: #4a90d9;
+  }
+  
+  .rain-value {
+    color: #4a90d9;
+    font-size: 48rpx;
+  }
+  
+  .hanger-value {
+    color: #722ed1;
+    font-size: 48rpx;
+  }
+  
+  .pir-value {
+    color: #fa8c16;
+    font-size: 48rpx;
+  }
+  
+  /* 光强数值颜色 */
+  .light-value {
+    color: #faad14;
+    font-size: 72rpx;
+  }
+  
+  .card-unit {
+    font-size: 32rpx;
+    color: #8c9ab5;
+    margin-left: 8rpx;
+    font-weight: 400;
+  }
+  
+  /* 趋势指示 */
+  .card-trend {
+    margin-bottom: 16rpx;
+  }
+  
+  .card-trend text {
+    font-size: 22rpx;
+    padding: 4rpx 14rpx;
+    border-radius: 20rpx;
+  }
+  
+  .trend-up {
+    color: #f5222d;
+    background: rgba(245, 34, 45, 0.08);
+  }
+  
+  .trend-down {
+    color: #4a90d9;
+    background: rgba(74, 144, 217, 0.08);
+  }
+  
+  .trend-stable {
+    color: #8c9ab5;
+    background: rgba(140, 154, 181, 0.08);
+  }
+  
+  /* 进度条 */
+  .card-progress {
+    margin-top: 4rpx;
+  }
+  
+  .progress-bg {
+    height: 6rpx;
+    border-radius: 3rpx;
+    background: #e8edf5;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    border-radius: 3rpx;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .temp-fill {
+    background: linear-gradient(90deg, #ff7875, #f5222d);
+  }
+  
+  .humi-fill {
+    background: linear-gradient(90deg, #7bb3f0, #4a90d9);
+  }
+  
+  .rain-fill {
+    background: linear-gradient(90deg, #85a5ff, #4a90d9);
+  }
+  
+  /* 光强进度条颜色 */
+  .light-fill {
+    background: linear-gradient(90deg, #ffd666, #faad14);
+  }
+  
+  /* 装饰波纹 */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 1rpx solid rgba(74, 144, 217, 0.08);
+    pointer-events: none;
+  }
+  
+  .ripple-1 {
+    width: 180rpx;
+    height: 180rpx;
+    top: -60rpx;
+    right: -40rpx;
+    animation: rippleExpand 6s ease-out infinite;
+  }
+  
+  .ripple-2 {
+    width: 120rpx;
+    height: 120rpx;
+    bottom: -30rpx;
+    left: -30rpx;
+    animation: rippleExpand 6s ease-out 3s infinite;
+  }
+  
+  @keyframes rippleExpand {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(0.8); opacity: 0.5; }
+  }
+  
+  /* ============ 异常标签 ============ */
+  .abnormal-tag {
+    font-size: 20rpx;
+    color: #f5222d;
+    background: rgba(245, 34, 45, 0.08);
+    padding: 4rpx 12rpx;
+    border-radius: 12rpx;
+    margin-left: 12rpx;
+  }
+  
+  /* ============ 雨量状态指示 ============ */
+  .rain-status {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+    margin-top: 8rpx;
+  }
+  
+  .rain-indicator {
+    width: 48rpx;
+    height: 48rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .rain-on {
+    background: rgba(74, 144, 217, 0.1);
+    border: 2rpx solid rgba(74, 144, 217, 0.35);
+  }
+  
+  .rain-off {
+    background: rgba(82, 196, 26, 0.08);
+    border: 2rpx solid rgba(82, 196, 26, 0.2);
+  }
+  
+  .rain-dot {
+    width: 16rpx;
+    height: 16rpx;
+    border-radius: 50%;
+  }
+  
+  .rain-on .rain-dot {
+    background: #4a90d9;
+    box-shadow: 0 0 12rpx rgba(74, 144, 217, 0.4);
+  }
+  
+  .rain-off .rain-dot {
+    background: #52c41a;
+  }
+  
+  .rain-label {
+    font-size: 22rpx;
+    color: #6b7d95;
+  }
+  
+  /* 雨量卡片高亮 */
+  .rain-active {
+    border-color: rgba(74, 144, 217, 0.25) !important;
+    box-shadow: 0 4rpx 24rpx rgba(74, 144, 217, 0.12);
+  }
+  
+  /* ============ 衣架状态卡片 ============ */
+  .hanger-status {
+    display: flex;
+    align-items: center;
+    margin-top: 8rpx;
+  }
+  
+  .hanger-indicator {
+    width: 48rpx;
+    height: 48rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .hanger-out {
+    background: rgba(114, 46, 209, 0.1);
+    border: 2rpx solid rgba(114, 46, 209, 0.35);
+  }
+  
+  .hanger-in {
+    background: rgba(82, 196, 26, 0.08);
+    border: 2rpx solid rgba(82, 196, 26, 0.2);
+  }
+  
+  .hanger-dot {
+    width: 16rpx;
+    height: 16rpx;
+    border-radius: 50%;
+  }
+  
+  .hanger-out .hanger-dot {
+    background: #722ed1;
+    box-shadow: 0 0 12rpx rgba(114, 46, 209, 0.4);
+  }
+  
+  .hanger-in .hanger-dot {
+    background: #52c41a;
+  }
+  
+  /* ============ 红外感应卡片 ============ */
+  .pir-status {
+    display: flex;
+    align-items: center;
+    margin-top: 8rpx;
+  }
+  
+  .pir-indicator {
+    width: 48rpx;
+    height: 48rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .pir-active {
+    background: rgba(245, 34, 45, 0.1);
+    border: 2rpx solid rgba(245, 34, 45, 0.35);
+  }
+  
+  .pir-idle {
+    background: rgba(82, 196, 26, 0.08);
+    border: 2rpx solid rgba(82, 196, 26, 0.2);
+  }
+  
+  .pir-dot {
+    width: 16rpx;
+    height: 16rpx;
+    border-radius: 50%;
+  }
+  
+  .pir-active .pir-dot {
+    background: #f5222d;
+    box-shadow: 0 0 12rpx rgba(245, 34, 45, 0.4);
+    animation: irBlink 0.5s ease-in-out infinite;
+  }
+  
+  .pir-idle .pir-dot {
+    background: #52c41a;
+  }
+  
+  @keyframes irBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  
+  /* ============ 更新时间 ============ */
+  .update-time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40rpx;
+    padding: 16rpx 0;
+  }
+  
+  .update-label {
+    font-size: 24rpx;
+    color: #8c9ab5;
+    margin-right: 12rpx;
+  }
+  
+  .update-value {
+    font-size: 24rpx;
+    color: #4a5568;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    letter-spacing: 2rpx;
+  }

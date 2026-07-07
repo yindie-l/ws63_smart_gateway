@@ -1,0 +1,22 @@
+/* app.wxss - 全局样式（蓝白清新配色） */
+
+page {
+  --bg-primary: #f0f5ff;
+  --bg-card: #ffffff;
+  --text-primary: #1a2a40;
+  --text-secondary: #6b7d95;
+  --accent-blue: #4a90d9;
+  --accent-light: #7bb3f0;
+  --accent-green: #52c41a;
+  --accent-orange: #fa8c16;
+  --accent-red: #f5222d;
+  --border-light: #dce6f5;
+  --shadow-card: 0 4rpx 24rpx rgba(74, 144, 217, 0.08);
+
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  height: 100%;
+  overflow-x: hidden;
+}

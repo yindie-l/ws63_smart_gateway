@@ -1,0 +1,114 @@
+<!-- pages/clothes/clothes.wxml - 晾衣架 & 窗户控制页 -->
+<!-- 按接口文档: 下发 {target, action} 格式指令 -->
+
+<view class="page-container">
+
+  <!-- 红外警告横幅 -->
+  <view class="warning-banner {{showWarning ? 'warning-show' : ''}}">
+    <view class="warning-icon">⚠️</view>
+    <view class="warning-content">
+      <text class="warning-title">安全提示</text>
+      <text class="warning-text">有人靠近，请注意安全</text>
+    </view>
+  </view>
+
+  <!-- 顶部连接状态栏 -->
+  <view class="status-bar {{mqttConnected ? 'connected' : 'disconnected'}}">
+    <view class="status-dot {{mqttConnected ? 'dot-online' : 'dot-offline'}}"></view>
+    <text class="status-text">{{mqttConnected ? 'MQTT已连接' : '未连接'}}</text>
+    <view wx:if="{{!mqttConnected && !connecting}}" class="reconnect-btn" bindtap="onReconnect">
+      <text>点击重连</text>
+    </view>
+    <view wx:if="{{connecting}}" class="connecting-text">
+      <text>正在连接Broker...</text>
+    </view>
+  </view>
+
+  <!-- ============ 衣架控制区域 ============ -->
+  <view class="section">
+    <view class="section-title">晾衣架控制</view>
+
+    <!-- 衣架状态显示 -->
+    <view class="rack-status">
+      <view class="status-indicator {{hangerStatus === 'extended' ? 'indicator-on' : 'indicator-off'}}">
+        <view class="indicator-ring">
+          <view class="indicator-core"></view>
+        </view>
+      </view>
+      <text class="status-label">{{hangerText}}</text>
+    </view>
+
+    <!-- 衣架图标动画 -->
+    <view class="rack-visual {{hangerStatus === 'extended' ? 'rack-down' : 'rack-up'}}">
+      <view class="rack-bar"></view>
+      <view class="rack-body">
+        <view class="rack-line line-1"></view>
+        <view class="rack-line line-2"></view>
+        <view class="rack-line line-3"></view>
+      </view>
+      <view class="rack-hook"></view>
+    </view>
+
+    <!-- 衣架控制按钮组 -->
+    <view class="btn-group">
+      <view class="control-btn btn-extend {{btnHangerActive ? 'btn-pressed' : ''}}"
+            bindtap="onExtendHanger">
+        <view class="btn-bg"></view>
+        <view class="btn-content">
+          <text class="btn-icon">⬇</text>
+          <text class="btn-text">伸出衣架</text>
+        </view>
+        <view class="btn-glow-ring"></view>
+      </view>
+      <view class="control-btn btn-retract {{btnHangerActive ? 'btn-pressed' : ''}}"
+            bindtap="onRetractHanger">
+        <view class="btn-bg"></view>
+        <view class="btn-content">
+          <text class="btn-icon">⬆</text>
+          <text class="btn-text">收回衣架</text>
+        </view>
+        <view class="btn-glow-ring"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ============ 窗户控制区域 ============ -->
+  <view class="section">
+    <view class="section-title">窗户控制</view>
+
+    <!-- 窗户状态 -->
+    <view class="window-status">
+      <text class="window-label">窗户状态：</text>
+      <text class="window-value">{{windowText}}</text>
+    </view>
+
+    <!-- 窗户控制按钮组 -->
+    <view class="btn-group">
+      <view class="control-btn btn-extend {{btnWindowActive ? 'btn-pressed' : ''}}"
+            bindtap="onOpenWindow">
+        <view class="btn-bg"></view>
+        <view class="btn-content">
+          <text class="btn-icon">🪟</text>
+          <text class="btn-text">打开窗户</text>
+        </view>
+        <view class="btn-glow-ring"></view>
+      </view>
+      <view class="control-btn btn-retract {{btnWindowActive ? 'btn-pressed' : ''}}"
+            bindtap="onCloseWindow">
+        <view class="btn-bg"></view>
+        <view class="btn-content">
+          <text class="btn-icon">🪟</text>
+          <text class="btn-text">关闭窗户</text>
+        </view>
+        <view class="btn-glow-ring"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 红外传感器状态 -->
+  <view class="ir-sensor-status">
+    <view class="ir-dot {{pir === 1 ? 'ir-active' : 'ir-idle'}}"></view>
+    <text class="ir-text">{{pir === 1 ? '检测到有人靠近' : '红外感应正常'}}</text>
+  </view>
+
+</view>

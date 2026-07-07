@@ -1,0 +1,34 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/clothes/clothes"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#4a90d9",
+    "navigationBarTitleText": "智家",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f0f5ff",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#8c9ab5",
+    "selectedColor": "#4a90d9",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "环境监测",
+        "iconPath": "images/tab_home.png",
+        "selectedIconPath": "images/tab_home_active.png"
+      },
+      {
+        "pagePath": "pages/clothes/clothes",
+        "text": "晾衣架",
+        "iconPath": "images/tab_clothes.png",
+        "selectedIconPath": "images/tab_clothes_active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}
