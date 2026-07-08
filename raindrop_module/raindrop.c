@@ -63,6 +63,3 @@ static void adc_entry(void)
    }
    osal_kthread_unlock();
 }
-/* Run the adc_entry. */
-
-app_run(adc_entry);

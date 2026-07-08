@@ -178,7 +178,7 @@ char *combine_strings(int str_amount, char *str1, ...)
 /**
  * 构造华为云属性上报 JSON（5 个字段）
  */
-char *make_json(char *service_id, char *temp, char *humidity, char *rain, char *hanger, char *pir)
+char *make_json(char *service_id, char *temp, char *humidity, char *rain, char *hanger, char *pir,char *light)
 {
     cJSON *root = cJSON_CreateObject();
     cJSON *services = cJSON_CreateArray();
@@ -191,6 +191,7 @@ char *make_json(char *service_id, char *temp, char *humidity, char *rain, char *
     cJSON_AddStringToObject(properties, "rain", rain);
     cJSON_AddStringToObject(properties, "hanger", hanger);
     cJSON_AddStringToObject(properties, "pir", pir);
+    cJSON_AddStringToObject(properties, "light", light);
 
     cJSON_AddItemToObject(service, "properties", properties);
     cJSON_AddItemToArray(services, service);

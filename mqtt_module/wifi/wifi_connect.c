@@ -60,7 +60,7 @@ static td_void wifi_scan_state_changed(td_s32 state, td_s32 size)
 {
     UNUSED(state);
     UNUSED(size);
-    printf("[STA] wifi_scan_state_changed called, state=%d, size=%d\n", state, size);
+    PRINT("%s::Scan done!.\r\n", WIFI_STA_SAMPLE_LOG);
     g_wifi_state = WIFI_STA_SAMPLE_SCAN_DONE;
     return;
 }
@@ -72,12 +72,12 @@ static td_void wifi_connection_changed(td_s32 state, const wifi_linked_info_stru
 {
     UNUSED(info);
     UNUSED(reason_code);
-    printf("[STA] wifi_connection_changed called, state=%d, reason_code=%d\n", state, reason_code);
+
     if (state == WIFI_NOT_AVALLIABLE) {
-        printf("[STA] Connect fail! try again\n");
+        PRINT("%s::Connect fail!. try agin !\r\n", WIFI_STA_SAMPLE_LOG);
         g_wifi_state = WIFI_STA_SAMPLE_INIT;
     } else {
-        printf("[STA] Connect succ!\n");
+        PRINT("%s::Connect succ!.\r\n", WIFI_STA_SAMPLE_LOG);
         g_wifi_state = WIFI_STA_SAMPLE_CONNECT_DONE;
     }
 }
@@ -180,49 +180,49 @@ td_bool example_check_dhcp_status(struct netif *netif_p, td_u32 *wait_count)
 
 td_s32 example_sta_function(const char *ssid, const char *psk)
 {
-    td_char ifname[WIFI_IFNAME_MAX_SIZE + 1] = "wlan0";
-    wifi_sta_config_stru expected_bss = {0};
+    td_char ifname[WIFI_IFNAME_MAX_SIZE + 1] = "wlan0"; /* 创建的STA接口名 */
+    wifi_sta_config_stru expected_bss = {0};            /* 连接请求信息 */
     struct netif *netif_p = TD_NULL;
     td_u32 wait_count = 0;
 
+    /* 创建STA接口 */
     if (wifi_sta_enable() != 0) {
-        printf("[STA] wifi_sta_enable failed\n");
         return -1;
     }
-    printf("[STA] STA enable succ.\n");
+    PRINT("%s::STA enable succ.\r\n", WIFI_STA_SAMPLE_LOG);
 
     do {
-        (void)osDelay(1);
+        (void)osDelay(1); /* 1: 等待10ms后判断状态 */
         if (g_wifi_state == WIFI_STA_SAMPLE_INIT) {
-            printf("[STA] State: INIT, starting scan...\n");
+            PRINT("%s::Scan start!\r\n", WIFI_STA_SAMPLE_LOG);
             g_wifi_state = WIFI_STA_SAMPLE_SCANING;
+            /* 启动STA扫描 */
             if (wifi_sta_scan() != 0) {
-                printf("[STA] wifi_sta_scan failed\n");
                 g_wifi_state = WIFI_STA_SAMPLE_INIT;
                 continue;
             }
         } else if (g_wifi_state == WIFI_STA_SAMPLE_SCAN_DONE) {
-            printf("[STA] State: SCAN_DONE, finding AP...\n");
+            /* 获取待连接的网络 */
             if (example_get_match_network(&expected_bss, ssid, psk) != 0) {
-                printf("[STA] AP not found, retry\n");
+                PRINT("%s::Do not find AP, try again !\r\n", WIFI_STA_SAMPLE_LOG);
                 g_wifi_state = WIFI_STA_SAMPLE_INIT;
                 continue;
             }
             g_wifi_state = WIFI_STA_SAMPLE_FOUND_TARGET;
         } else if (g_wifi_state == WIFI_STA_SAMPLE_FOUND_TARGET) {
-            printf("[STA] State: FOUND_TARGET, connecting...\n");
+            PRINT("%s::Connect start.\r\n", WIFI_STA_SAMPLE_LOG);
             g_wifi_state = WIFI_STA_SAMPLE_CONNECTING;
+            /* 启动连接 */
             if (wifi_sta_connect(&expected_bss) != 0) {
-                printf("[STA] wifi_sta_connect failed\n");
                 g_wifi_state = WIFI_STA_SAMPLE_INIT;
                 continue;
             }
         } else if (g_wifi_state == WIFI_STA_SAMPLE_CONNECT_DONE) {
-            printf("[STA] State: CONNECT_DONE, starting DHCP...\n");
+            PRINT("%s::DHCP start.\r\n", WIFI_STA_SAMPLE_LOG);
             g_wifi_state = WIFI_STA_SAMPLE_GET_IP;
             netif_p = netifapi_netif_find(ifname);
             if (netif_p == TD_NULL || netifapi_dhcp_start(netif_p) != 0) {
-                printf("[STA] DHCP start failed\n");
+                PRINT("%s::find netif or start DHCP fail, try again !\r\n", WIFI_STA_SAMPLE_LOG);
                 g_wifi_state = WIFI_STA_SAMPLE_INIT;
                 continue;
             }
@@ -235,7 +235,6 @@ td_s32 example_sta_function(const char *ssid, const char *psk)
         }
     } while (1);
 
-    printf("[STA] Wi-Fi connected successfully!\n");
     return 0;
 }
 

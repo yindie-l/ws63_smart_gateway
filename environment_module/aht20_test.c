@@ -104,5 +104,3 @@ void Aht20Test(void)
     osal_kfree(task_handle);  // 句柄已不再需要
     osal_kthread_unlock();
 }
-
-app_run(Aht20Test);

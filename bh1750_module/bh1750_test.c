@@ -105,5 +105,3 @@ void Bh1750Test(void)
 
     osal_kthread_unlock();
 }
-
-app_run(Bh1750Test);

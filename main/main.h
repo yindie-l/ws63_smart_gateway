@@ -268,3 +268,10 @@ static inline void SetLedState(pin_t led_pin, int turn_on)
 {
     uapi_gpio_set_val(led_pin, turn_on ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW);
 }
+
+extern volatile int g_servoRun;
+extern volatile int g_servoActionDone;
+extern volatile int g_windowState;
+extern volatile uint32_t g_window_remains;
+extern volatile unsigned int g_window_pulse_duty;
+extern char g_hanger_status[20];

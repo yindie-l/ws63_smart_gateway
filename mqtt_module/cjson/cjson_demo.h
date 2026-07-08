@@ -10,7 +10,7 @@
 #ifndef CJSON_DEMO_H
 #define CJSON_DEMO_H
 
-char *make_json(char *service_id, char *temp, char *humidity, char *rain, char *hanger, char *pir);
+char *make_json(char *service_id, char *temp, char *humidity, char *rain, char *hanger, char *pir, char *light);
 char *parse_json(char *json_string);
 char *combine_strings(int str_amount, char *str1, ...);
 

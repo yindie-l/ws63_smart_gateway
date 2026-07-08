@@ -53,4 +53,3 @@ void SG92RSampleEntry(void)
     }
     osal_kthread_unlock();
 }
-app_run(SG92RSampleEntry);

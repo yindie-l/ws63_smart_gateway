@@ -83,12 +83,4 @@ config BH1750_MODULE
     depends on ENABLE_WS63_DSWDBD
     help
         This option means enable the sample of BH1750_MODULE
-
-config MQTT_MODULE
-    bool
-    prompt "MQTT_MODULE."
-    default n
-    depends on ENABLE_WS63_DSWDBD
-    help
-        This option means enable the sample of MQTT_MODULE
         

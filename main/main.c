@@ -34,6 +34,7 @@ void app_i2c_init_pin(void)
 }
 
 /* ==================== 全局状态变量 ==================== */
+char g_hanger_status[20] = "retracted";
 volatile int g_servoRun = 0;
 volatile int g_buzzerTrigger = 0;   // 0-未触发，1-需要播放
 volatile int g_servoActionDone = 0; // 动作完成标记
@@ -42,15 +43,19 @@ volatile uint32_t g_last_button_time = 0;
 /* 晾衣架角度量程 */
 volatile float g_current_angle = -45.0f;
 volatile float g_interrupted_angle = -45.0f;
-char g_hanger_status[20] = "retracted";   // 衣架状态字符串
 
 /* 窗户状态控制变量 */
 volatile int g_windowState = 0;             // 0:已关闭/静止, 1:正在开窗, -1:正在关窗, 2:已开窗
 volatile uint32_t g_window_remains = 0;     // 窗户舵机剩余脉冲周期数
-unsigned int g_window_pulse_duty = WINDOW_SPEED_STOP;
+volatile unsigned int g_window_pulse_duty = WINDOW_SPEED_STOP;
 
 /* 紧急避雨联动状态机 */
 volatile int g_rain_emergency_active = 0;   // 0:正常, 1:正在紧急处理避雨
+
+
+volatile uint8_t g_button_print_flag = 0;   // 按键中断触发打印标志
+volatile uint8_t g_pir_print_flag = 0;      // PIR中断触发打印标志
+
 
 /* PWM 周期结束回调函数 */
 static errcode_t pwm_sample_callback(uint8_t channel)
@@ -109,7 +114,8 @@ static void gpio_callback_func(pin_t pin, uintptr_t param)
     }
     
     g_servoActionDone = 0;
-    printf("Button pressed. New State: %d\r\n", g_servoRun);
+    // printf("Button pressed. New State: %d\r\n", g_servoRun);  // 删除该行
+    g_button_print_flag = 1;  // 新增：设置打印标志
 }
 
 /* 初始化板载按键中断函数 */
@@ -139,10 +145,10 @@ static void pir_interrupt_handler(pin_t pin, uintptr_t param)
         
         g_servoRun = 3;
         g_buzzerTrigger = 1;
-        printf("PIR Triggered! Safe return target: %.1f\r\n", g_interrupted_angle);
+        // printf("PIR Triggered! Safe return target: %.1f\r\n", g_interrupted_angle); // 删除
+        g_pir_print_flag = 1;  // 新增：设置打印标志
     }
 }
-
 /* 初始化红外传感器中断函数*/
 void PirInterruptInit(void)
 {
@@ -213,7 +219,7 @@ void UpdateOledDisplay(int state, float temp, float humi, uint32_t tick)
 
     Oled_DrawChineseString(0, 48, hz_line7, 2);
     ssd1306_SetCursor(34, 51);
-    ssd1306_DrawString(":500 lux", Font_7x10, 1);
+    ssd1306_DrawString(":326 lux", Font_7x10, 1);
     
     ssd1306_UpdateScreen();
 }
@@ -267,7 +273,6 @@ static void Window_Servo_TriggerRotation(int direction)
 /* 主任务 */
 void mainTask(void)
 {
-    printf("=== mainTask STARTED ===\n");  // 新增
     uint32_t baudrate = I2C_SET_BANDRATE;
     uint32_t hscode = I2C_MASTER_ADDR;
     
@@ -294,8 +299,17 @@ void mainTask(void)
     LedsInit();
     BuzzerInit();
     SmartWindow_Hardware_Init(); 
-
+    
     uapi_adc_init(ADC_CLOCK_NONE);
+    //mqtt_module_init();
+    // ========== MQTT 初始化（直接在主任务中执行） ==========
+    int mqtt_ret = mqtt_module_init_direct();
+    if (mqtt_ret == 0) {
+        printf("MQTT ready, reporting enabled.\n");
+        // 连接成功后，可以继续运行主循环
+    } else {
+        printf("MQTT init failed, continuing without MQTT.\n");
+    }
 
     int calib_retry = 0;
     while (AHT20_Calibrate() != 0) {
@@ -303,8 +317,6 @@ void mainTask(void)
         if (calib_retry++ > 5) break;
     }
 
-    mqtt_module_init();
-    
     int last_state = -99;
     float current_temp = 0.0f;
     float current_humi = 0.0f;
@@ -336,69 +348,57 @@ void mainTask(void)
             uapi_pwm_deinit();
             g_buzzerTrigger = 0;
         }
-
-        /* 定时读取温湿度并更新屏幕显示 */
-        if (tick_count % 5 == 0) {
+        /* 定时读取温湿度（每 30 秒一次） */
+        if (tick_count % 1500 == 0) {
             ret = AHT20_StartMeasure();
             if (ret == 0) {
-                uapi_systick_delay_ms(80);
+                uapi_systick_delay_ms(80);     // AHT20 转换等待（80ms）
                 AHT20_GetMeasureResult(&current_temp, &current_humi);
             }
         }
-        UpdateOledDisplay(g_servoRun, current_temp, current_humi, tick_count);
-
+        /* ---------- OLED 和 LED 刷新优化 ---------- */
+        /* 状态变化强制更新（包括 LED 和 OLED） */
+        if (g_servoRun != last_state) {
+            // 1. 更新 LED 状态
+            if (g_servoRun == 0 || g_servoRun == 1 || g_servoRun == -1) {
+                SetLedState(LED_GREEN_GPIO, 1); SetLedState(LED_YELLOW_GPIO, 0); SetLedState(LED_RED_GPIO, 0);
+            } else if (g_servoRun == 2 || g_servoRun == -2) {
+                SetLedState(LED_GREEN_GPIO, 0); SetLedState(LED_YELLOW_GPIO, 1); SetLedState(LED_RED_GPIO, 0);
+            } else if (g_servoRun == 3) {
+                SetLedState(LED_GREEN_GPIO, 0); SetLedState(LED_YELLOW_GPIO, 0); SetLedState(LED_RED_GPIO, 1);
+            }
+            // 2. 更新 OLED 显示（强制刷新）
+            UpdateOledDisplay(g_servoRun, current_temp, current_humi, tick_count);
+            // 3. 更新 last_state
+            last_state = g_servoRun;
+        } 
+        /* 定时刷新 OLED（仅当状态未变化时，每 10 次循环 = 200ms 刷新一次） */
+        else if (tick_count % 10 == 0) {
+            UpdateOledDisplay(g_servoRun, current_temp, current_humi, tick_count);
+        }
         /* ==================== ADC 多通道分时采样与逻辑处理 ==================== */
         
-        // 1. 读取雨滴传感器 (通道 5)
-        if (adc_port_read(ADC_CH_RAIN_SENSOR, &rain_voltage) == ERRCODE_SUCC) 
-        {
-            if (rain_voltage < 1300) // 检测到降雨
-            {
+                if (adc_port_read(ADC_CH_RAIN_SENSOR, &rain_voltage) == ERRCODE_SUCC) 
+                {
+                 if (rain_voltage < 1300)
+                {
                 if (!g_rain_emergency_active) {
-                    g_rain_emergency_active = 1; 
-                    printf("Rain detected on CH5! Starting Emergency Sequence.\r\n");
+                 g_rain_emergency_active = 1;
+                printf("Rain detected! Synchronous closing sequence activated.\r\n");
                 }
-
-                /* 避雨逻辑控制树 */
-                if (g_rain_emergency_active == 1) 
+                 if (g_servoRun == -2 || g_servoRun == 2) {
+                 g_servoRun = 1;
+                g_servoActionDone = 0;
+                }
+                 if (g_windowState == 2 || g_windowState == 1) {
+                Window_Servo_TriggerRotation(-1);
+                }
+                 }
+                 else 
                 {
-                    // 检查晾衣架是否处于伸出状态 (对应需求 1 和 3)
-                    if (g_servoRun == -2 || g_servoRun == 2) {
-                        g_servoRun = 1;         // 强制触发收衣服
-                        g_servoActionDone = 0;
-                    }
-                    
-                    // 等待晾衣架成功缩回完毕
-                    if (g_servoRun == -1 || g_servoRun == 0) {
-                        // 衣服安全收回后，接着看窗户开着没，开着就关窗 (对应需求 1)
-                        if (g_windowState == 2) {
-                            Window_Servo_TriggerRotation(-1); 
-                        }
-                        g_rain_emergency_active = 2; 
-                    }
-                    
-                    // 如果衣服本来就是收回的，但窗户是开着的 (对应需求 2)
-                    if ((g_servoRun == -1 || g_servoRun == 0) && g_windowState == 2) {
-                        Window_Servo_TriggerRotation(-1); 
-                        g_rain_emergency_active = 2;
-                    }
-                }
-                else if (g_rain_emergency_active == 2)
-                {
-                    // 等待窗户也完全关闭
-                    if (g_windowState == 0) {
-                        g_rain_emergency_active = 3; 
-                        printf("Emergency Rain Sequence Completed.\r\n");
-                    }
-                }
-            }
-            else 
-            {
-                // 天晴，清除下雨紧急标记
                 g_rain_emergency_active = 0;
-            }
-        }
-
+                }
+                 }
         // 2. 如果没下雨，读取ADC分压按钮 (通道 1) 进行窗户的手动控制
         if (g_rain_emergency_active == 0) 
         {
@@ -458,21 +458,6 @@ void mainTask(void)
             Window_Servo_WritePulse(WINDOW_SPEED_STOP);
         }
 
-        /* LED 灯光状态感知 */
-        if (g_servoRun != last_state) {
-            last_state = g_servoRun;
-            UpdateOledDisplay(g_servoRun, current_temp, current_humi, tick_count);
-            
-            if (g_servoRun == 0 || g_servoRun == 1 || g_servoRun == -1) {
-                SetLedState(LED_GREEN_GPIO, 1);  SetLedState(LED_YELLOW_GPIO, 0); SetLedState(LED_RED_GPIO, 0);
-            } 
-            else if (g_servoRun == 2 || g_servoRun == -2) {
-                SetLedState(LED_GREEN_GPIO, 0);  SetLedState(LED_YELLOW_GPIO, 1); SetLedState(LED_RED_GPIO, 0);
-            } 
-            else if (g_servoRun == 3) {
-                SetLedState(LED_GREEN_GPIO, 0);  SetLedState(LED_YELLOW_GPIO, 0); SetLedState(LED_RED_GPIO, 1);
-            }
-        }
 
         /* 晾衣架平滑控制逻辑 */
         if (g_servoRun == 1 && !g_servoActionDone)
@@ -494,17 +479,27 @@ void mainTask(void)
             }
         }
         
-        // 收集传感器数据
-        sensor_data_t data;
-        data.temp = current_temp;
-        data.humi = current_humi;
-        data.rain = (rain_voltage < 1300) ? 1 : 0;
-        PIR_GetStatus(&data.pir);
-        strncpy(data.hanger, g_hanger_status, sizeof(data.hanger)-1);
-        data.hanger[sizeof(data.hanger)-1] = '\0';
-
-        mqtt_module_update_sensor_data(&data);
-        uapi_systick_delay_ms(20); // 维持 20ms 的核心周期底色
+        if (g_button_print_flag) {
+            printf("Button pressed. New State: %d\r\n", g_servoRun);
+            g_button_print_flag = 0;
+        }
+        if (g_pir_print_flag) {
+            printf("PIR Triggered! Safe return target: %.1f\r\n", g_interrupted_angle);
+            g_pir_print_flag = 0;
+        }
+        // ===== 定期上报 MQTT =====
+        static uint32_t last_report_ms = 0;
+        uint32_t now_ms = (uint32_t)uapi_systick_get_ms();
+        if (now_ms - last_report_ms >= 10000) {   // 每10秒上报一次
+            last_report_ms = now_ms;
+            // 获取当前传感器状态（变量已在前面读取）
+            // current_temp, current_humi 已在循环中更新
+            uint8_t pir_val = 0;
+            PIR_GetStatus(&pir_val);          // 主动读取 PIR
+            uint8_t rain_val = (rain_voltage < 1300) ? 1 : 0;  // 根据 ADC 判断
+            mqtt_module_send_report(current_temp, current_humi, rain_val, pir_val, g_hanger_status);
+        }
+        uapi_systick_delay_ms(20);
         tick_count++;
     }
 }

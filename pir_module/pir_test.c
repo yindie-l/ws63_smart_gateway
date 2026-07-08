@@ -44,7 +44,9 @@ void PirTestTask(void)
         } else {
             if (detected) {
                 osal_printk("Human motion detected!\r\n");
-            } 
+            } else {
+                osal_printk("No motion.\r\n");
+            }
         }
         osal_mdelay(500);   // 每500ms查询一次
     }

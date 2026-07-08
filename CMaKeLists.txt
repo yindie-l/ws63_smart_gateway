@@ -36,8 +36,6 @@ if(DEFINED CONFIG_BH1750_MODULE)
     add_subdirectory_if_exist(bh1750_module)
 endif()
 
-# if(DEFINED CONFIG_MQTT_MODULE)
-#     add_subdirectory_if_exist(mqtt_module)
-# endif()
 add_subdirectory_if_exist(mqtt_module)
+
 set(SOURCES "${SOURCES}" PARENT_SCOPE)
