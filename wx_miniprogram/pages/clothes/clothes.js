@@ -1,466 +1,3 @@
-// // // pages/clothes/clothes.js - 晾衣架 & 窗户控制页
-// // // 按接口文档：向 /device/ws63/command 发布 {target, action} 格式的指令
-
-// // const MQTTManager = require('../../utils/mqtt.js');
-// // const app = getApp();
-
-// // Page({
-// //   data: {
-// //     // 连接状态
-// //     mqttConnected: false,
-// //     connecting: false,
-
-// //     // 衣架状态（来自遥测数据）
-// //     hangerStatus: '--',       // "retracted" / "extended"
-// //     hangerText: '--',
-
-// //     // 窗户状态
-// //     windowStatus: '--',
-// //     windowText: '--',
-
-// //     // 红外传感器
-// //     pir: 0,
-// //     showWarning: false,
-// //     warningTimer: null,
-
-// //     // 按钮状态
-// //     sendingCmd: false,
-// //     btnHangerActive: false,
-// //     btnWindowActive: false
-// //   },
-
-// //   mqtt: null,
-
-// //   onLoad() {
-// //     this.mqtt = new MQTTManager();
-
-// //     // 接收遥测数据回调
-// //     this.mqtt.onDataReceived((data) => {
-// //       this.handleTelemetry(data);
-// //     });
-
-// //     // 设备状态回调
-// //     this.mqtt.onStatusReceived((data) => {
-// //       console.log('[Clothes] 设备状态更新:', data);
-// //     });
-
-// //     // 连接状态回调
-// //     this.mqtt.onConnectionChange((connected) => {
-// //       this.setData({ mqttConnected: connected, connecting: false });
-// //       if (connected) {
-// //         wx.showToast({ title: 'MQTT已连接', icon: 'success', duration: 1500 });
-// //       }
-// //     });
-
-// //     // 如果全局已连接，同步状态
-// //     if (app.globalData.mqttConnected) {
-// //       this.setData({ mqttConnected: true });
-// //       if (app.globalData.latestData) {
-// //         this.handleTelemetry(app.globalData.latestData);
-// //       }
-// //     } else {
-// //       this.startConnection();
-// //     }
-// //   },
-
-// //   onShow() {
-// //     this._manualDisconnect = false;
-// //     if (app.globalData.mqttConnected && !this.data.mqttConnected) {
-// //       this.setData({ mqttConnected: true });
-// //       if (app.globalData.latestData) {
-// //         this.handleTelemetry(app.globalData.latestData);
-// //       }
-// //     }
-// //   },
-
-// //   onHide() {
-// //     if (this.data.warningTimer) {
-// //       clearTimeout(this.data.warningTimer);
-// //     }
-// //   },
-
-// //   onUnload() {
-// //     this._manualDisconnect = true;
-// //     if (this.data.warningTimer) clearTimeout(this.data.warningTimer);
-// //     if (this.mqtt) this.mqtt.disconnect();
-// //   },
-
-// //   // ==================== 数据处理 ====================
-
-// //   /**
-// //    * 处理遥测数据
-// //    * 提取衣架状态(hanger)和红外(pir)
-// //    */
-// //   handleTelemetry(data) {
-// //     const updateData = {};
-
-// //     // 衣架状态（hanger: "retracted" / "extended"）
-// //     if (data.hanger !== undefined) {
-// //       updateData.hangerStatus = data.hanger;
-// //       updateData.hangerText = data.hanger === 'extended' ? '已伸出' : '已收回';
-// //     }
-
-// //     // 红外感应（pir: 0/1）
-// //     if (data.pir !== undefined) {
-// //       updateData.pir = data.pir;
-// //       // 有人靠近 + 衣架伸出 → 自动预警
-// //       if (data.pir === 1 && data.hanger === 'extended') {
-// //         this.showPirWarning();
-// //       }
-// //     }
-
-// //     this.setData(updateData);
-// //   },
-
-// //   // ==================== 红外预警 ====================
-
-// //   showPirWarning() {
-// //     this.setData({ showWarning: true });
-// //     wx.vibrateLong({ fail: () => {} });
-
-// //     if (this.data.warningTimer) clearTimeout(this.data.warningTimer);
-// //     const timer = setTimeout(() => this.setData({ showWarning: false }), 3000);
-// //     this.setData({ warningTimer: timer });
-// //   },
-
-// //   // ==================== 衣架控制 ====================
-
-// //   /**
-// //    * 收回衣架
-// //    * 按接口文档: { target: "hanger", action: "retract" }
-// //    */
-// //   onRetractHanger() {
-// //     if (!this.checkConnection()) return;
-// //     if (this.data.sendingCmd) return;
-
-// //     this.sendCommand('hanger', 'retract', '收回衣架');
-// //   },
-
-// //   /**
-// //    * 伸出衣架
-// //    * 按接口文档: { target: "hanger", action: "extend" }
-// //    */
-// //   onExtendHanger() {
-// //     if (!this.checkConnection()) return;
-// //     if (this.data.sendingCmd) return;
-
-// //     this.sendCommand('hanger', 'extend', '伸出衣架');
-// //   },
-
-// //   // ==================== 窗户控制 ====================
-
-// //   /**
-// //    * 关闭窗户
-// //    * 按接口文档: { target: "window", action: "retract" }
-// //    */
-// //   onCloseWindow() {
-// //     if (!this.checkConnection()) return;
-// //     if (this.data.sendingCmd) return;
-
-// //     this.sendCommand('window', 'retract', '关闭窗户');
-// //   },
-
-// //   /**
-// //    * 打开窗户
-// //    * 按接口文档: { target: "window", action: "extend" }
-// //    */
-// //   onOpenWindow() {
-// //     if (!this.checkConnection()) return;
-// //     if (this.data.sendingCmd) return;
-
-// //     this.sendCommand('window', 'extend', '打开窗户');
-// //   },
-
-// //   // ==================== 通用指令发送 ====================
-
-// //   /**
-// //    * 发送控制指令到 /device/ws63/command
-// //    * @param {string} target - 控制对象: "hanger" 或 "window"
-// //    * @param {string} action - 执行动作: "retract" 或 "extend"
-// //    * @param {string} label  - 用于Toast显示的标签
-// //    */
-// //   async sendCommand(target, action, label) {
-// //     this.setData({
-// //       sendingCmd: true,
-// //       btnHangerActive: target === 'hanger',
-// //       btnWindowActive: target === 'window'
-// //     });
-
-// //     try {
-// //       await this.mqtt.publish(this.mqtt.commandTopic, {
-// //         target: target,
-// //         action: action
-// //       });
-
-// //       // 乐观更新UI
-// //       if (target === 'hanger') {
-// //         this.setData({
-// //           hangerStatus: action === 'extend' ? 'extended' : 'retracted',
-// //           hangerText: action === 'extend' ? '已伸出' : '已收回'
-// //         });
-// //       } else {
-// //         this.setData({
-// //           windowStatus: action === 'extend' ? 'extended' : 'retracted',
-// //           windowText: action === 'extend' ? '已打开' : '已关闭'
-// //         });
-// //       }
-
-// //       wx.showToast({
-// //         title: label + '成功',
-// //         icon: 'success',
-// //         duration: 1500
-// //       });
-// //     } catch (err) {
-// //       console.error('[Clothes] 指令发送失败:', err);
-// //       wx.showToast({
-// //         title: '指令发送失败',
-// //         icon: 'error',
-// //         duration: 2000
-// //       });
-// //     } finally {
-// //       this.setData({
-// //         sendingCmd: false,
-// //         btnHangerActive: false,
-// //         btnWindowActive: false
-// //       });
-// //     }
-// //   },
-
-// //   // ==================== 连接管理 ====================
-
-// //   checkConnection() {
-// //     if (!this.data.mqttConnected) {
-// //       wx.showToast({ title: '请先连接MQTT Broker', icon: 'none', duration: 2000 });
-// //       return false;
-// //     }
-// //     return true;
-// //   },
-
-// //   async startConnection() {
-// //     if (this.data.connecting || this.data.mqttConnected) return;
-// //     this.setData({ connecting: true });
-
-// //     try {
-// //       await this.mqtt.connect();
-// //     } catch (err) {
-// //       console.error('[Clothes] MQTT连接失败:', err);
-// //       this.setData({ connecting: false });
-// //       wx.showToast({
-// //         title: '连接失败，请检查Broker',
-// //         icon: 'none',
-// //         duration: 2000
-// //       });
-// //     }
-// //   },
-
-// //   onReconnect() {
-// //     if (this.mqtt) this.mqtt.disconnect();
-// //     this.setData({
-// //       mqttConnected: false,
-// //       hangerStatus: '--',
-// //       hangerText: '--',
-// //       windowStatus: '--',
-// //       windowText: '--'
-// //     });
-// //     setTimeout(() => this.startConnection(), 500);
-// //   }
-// // });
-// // pages/clothes/clothes.js - 晾衣架 & 窗户状态展示（仅接收，控制功能暂不启用）
-// // pages/clothes/clothes.js - 晾衣架 & 窗户控制页（包含发送命令）
-// // pages/clothes/clothes.js - 晾衣架 & 窗户控制页（包含发送命令）
-// const MQTTManager = require('../../utils/mqtt.js');
-// const app = getApp();
-
-// Page({
-//   data: {
-//     mqttConnected: false,
-//     connecting: false,
-
-//     hangerStatus: '--',
-//     hangerText: '--',
-//     windowStatus: '--',
-//     windowText: '--',
-
-//     pir: 0,
-//     showWarning: false,
-//     warningTimer: null,
-
-//     sendingCmd: false,
-//     btnHangerActive: false,
-//     btnWindowActive: false
-//   },
-
-//   mqtt: null,
-//   upTopic: null, // 保存上行主题
-
-//   onLoad() {
-//     this.mqtt = new MQTTManager();
-//     this.upTopic = app.globalData.mqtt.topics.up; // 获取上行主题
-
-//     this.mqtt.onDataReceived((data) => {
-//       this.handleTelemetry(data);
-//     });
-
-//     this.mqtt.onConnectionChange((connected) => {
-//       this.setData({ mqttConnected: connected, connecting: false });
-//       if (connected) {
-//         wx.showToast({ title: 'MQTT已连接', icon: 'success', duration: 1500 });
-//       }
-//     });
-
-//     if (app.globalData.mqttConnected) {
-//       this.setData({ mqttConnected: true });
-//       if (app.globalData.latestData) {
-//         this.handleTelemetry(app.globalData.latestData);
-//       }
-//     } else {
-//       this.startConnection();
-//     }
-//   },
-
-//   onShow() {
-//     this._manualDisconnect = false;
-//     if (app.globalData.mqttConnected && !this.data.mqttConnected) {
-//       this.setData({ mqttConnected: true });
-//       if (app.globalData.latestData) {
-//         this.handleTelemetry(app.globalData.latestData);
-//       }
-//     }
-//   },
-
-//   onHide() {
-//     if (this.data.warningTimer) clearTimeout(this.data.warningTimer);
-//   },
-
-//   onUnload() {
-//     this._manualDisconnect = true;
-//     if (this.data.warningTimer) clearTimeout(this.data.warningTimer);
-//     if (this.mqtt) this.mqtt.disconnect();
-//   },
-
-//   // ========== 数据处理 ==========
-//   handleTelemetry(data) {
-//     const updateData = {};
-//     if (data.hanger !== undefined) {
-//       updateData.hangerStatus = data.hanger;
-//       updateData.hangerText = data.hanger === 'extended' ? '已伸出' : '已收回';
-//     }
-//     if (data.pir !== undefined) {
-//       const p = parseInt(data.pir);
-//       updateData.pir = p;
-//       if (p === 1 && data.hanger === 'extended') {
-//         this.showPirWarning();
-//       }
-//     }
-//     this.setData(updateData);
-//   },
-
-//   // ========== 红外预警 ==========
-//   showPirWarning() {
-//     this.setData({ showWarning: true });
-//     wx.vibrateLong({ fail: () => {} });
-//     if (this.data.warningTimer) clearTimeout(this.data.warningTimer);
-//     const timer = setTimeout(() => this.setData({ showWarning: false }), 3000);
-//     this.setData({ warningTimer: timer });
-//   },
-
-//   // ========== 控制按钮（实际发送命令） ==========
-//   async onRetractHanger() {
-//     if (!this.checkConnection()) return;
-//     if (this.data.sendingCmd) return;
-//     await this.sendCommand('hanger', 'retract', '收回衣架');
-//   },
-
-//   async onExtendHanger() {
-//     if (!this.checkConnection()) return;
-//     if (this.data.sendingCmd) return;
-//     await this.sendCommand('hanger', 'extend', '伸出衣架');
-//   },
-
-//   async onCloseWindow() {
-//     if (!this.checkConnection()) return;
-//     if (this.data.sendingCmd) return;
-//     await this.sendCommand('window', 'retract', '关闭窗户');
-//   },
-
-//   async onOpenWindow() {
-//     if (!this.checkConnection()) return;
-//     if (this.data.sendingCmd) return;
-//     await this.sendCommand('window', 'extend', '打开窗户');
-//   },
-
-//   // ========== 通用发送命令方法 ==========
-//   async sendCommand(target, action, label) {
-//     this.setData({
-//       sendingCmd: true,
-//       btnHangerActive: target === 'hanger',
-//       btnWindowActive: target === 'window'
-//     });
-
-//     try {
-//       // 发布到华为云上行主题
-//       await this.mqtt.publish(this.upTopic, { target, action });
-
-//       // 乐观更新UI（本地先显示，后续遥测数据会覆盖）
-//       if (target === 'hanger') {
-//         this.setData({
-//           hangerStatus: action === 'extend' ? 'extended' : 'retracted',
-//           hangerText: action === 'extend' ? '已伸出' : '已收回'
-//         });
-//       } else {
-//         this.setData({
-//           windowStatus: action === 'extend' ? 'extended' : 'retracted',
-//           windowText: action === 'extend' ? '已打开' : '已关闭'
-//         });
-//       }
-
-//       wx.showToast({ title: label + '指令已发送', icon: 'success', duration: 1500 });
-//     } catch (err) {
-//       console.error('[Clothes] 指令发送失败:', err);
-//       wx.showToast({ title: '指令发送失败', icon: 'error', duration: 2000 });
-//     } finally {
-//       this.setData({
-//         sendingCmd: false,
-//         btnHangerActive: false,
-//         btnWindowActive: false
-//       });
-//     }
-//   },
-
-//   // ========== 连接管理 ==========
-//   checkConnection() {
-//     if (!this.data.mqttConnected) {
-//       wx.showToast({ title: '请先连接MQTT', icon: 'none', duration: 2000 });
-//       return false;
-//     }
-//     return true;
-//   },
-
-//   async startConnection() {
-//     if (this.data.connecting || this.data.mqttConnected) return;
-//     this.setData({ connecting: true });
-//     try {
-//       await this.mqtt.connect();
-//     } catch (err) {
-//       console.error('[Clothes] MQTT连接失败:', err);
-//       this.setData({ connecting: false });
-//       wx.showToast({ title: '连接失败，请检查配置', icon: 'none', duration: 2000 });
-//     }
-//   },
-
-//   onReconnect() {
-//     if (this.mqtt) this.mqtt.disconnect();
-//     this.setData({
-//       mqttConnected: false,
-//       hangerStatus: '--',
-//       hangerText: '--',
-//       windowStatus: '--',
-//       windowText: '--'
-//     });
-//     setTimeout(() => this.startConnection(), 500);
-//   }
-// });
-// pages/clothes/clothes.js - 晾衣架 & 窗户控制页（使用全局 MQTT 实例）
 // pages/clothes/clothes.js - 晾衣架 & 窗户控制页（使用全局 MQTT 实例，带兜底创建）
 const MQTTManager = require('../../utils/mqtt.js');
 const app = getApp();
@@ -481,12 +18,22 @@ Page({
 
     sendingCmd: false,
     btnHangerActive: false,
-    btnWindowActive: false
+    btnWindowActive: false,
+
+    // ========== 新增：童锁 ==========
+    childLock: false,
+
+    // ========== 新增：定时自动关闭 ==========
+    timerEnabled: false,
+    timerHour: '08',
+    timerMinute: '00',
+    timerText: ''
   },
 
   mqtt: null,
   upTopic: null,
   _manualDisconnect: false,
+  _timerHandle: null,
 
   onLoad() {
     // 兜底：如果全局没有 MQTT 实例，则创建并保存
@@ -540,6 +87,11 @@ Page({
   onUnload() {
     this._manualDisconnect = true;
     if (this.data.warningTimer) clearTimeout(this.data.warningTimer);
+    // 清理未执行的定时任务
+    if (this._timerHandle) {
+      clearTimeout(this._timerHandle);
+      this._timerHandle = null;
+    }
     // 不主动断开全局连接
   },
 
@@ -596,6 +148,12 @@ Page({
 
   // ========== 通用发送命令方法 ==========
   async sendCommand(target, action, label) {
+    // ========== 童锁拦截：开启后所有控制指令失效 ==========
+    if (this.data.childLock) {
+      wx.showToast({ title: '童锁已开启，操作被禁止', icon: 'none', duration: 1500 });
+      return;
+    }
+
     this.setData({
       sendingCmd: true,
       btnHangerActive: target === 'hanger',
@@ -653,5 +211,117 @@ Page({
       windowStatus: '--',
       windowText: '--'
     });
+  },
+
+  // ========== 新增功能一：童锁 ==========
+  // 开启后所有控制功能（衣架/窗户/定时自动关闭）均失效，无法触发任何指令。
+  // 童锁开关本身不受限制，以便用户可随时解除锁定。
+  onToggleChildLock(e) {
+    const locked = e && typeof e.detail === 'object' && e.detail !== null && e.detail.value !== undefined
+      ? !!e.detail.value
+      : !this.data.childLock;
+
+    this.setData({ childLock: locked });
+
+    if (locked) {
+      // 开启童锁时，取消尚未执行的定时任务
+      if (this._timerHandle) {
+        clearTimeout(this._timerHandle);
+        this._timerHandle = null;
+      }
+      this.setData({ timerEnabled: false, timerText: '' });
+      wx.showToast({ title: '童锁已开启', icon: 'none', duration: 1500 });
+    } else {
+      wx.showToast({ title: '童锁已关闭', icon: 'none', duration: 1500 });
+    }
+
+    // 上报童锁状态到设备（与伸出衣架 {target, action} 同格式）
+    // 注意：直接 publish，绕过 sendCommand 的童锁拦截，否则开启后会被自身挡住
+    if (this.mqtt && this.upTopic) {
+      this.mqtt.publish(this.upTopic, { target: 'lock', action: locked ? 'lock' : 'unlock' })
+        .then(() => console.log('[Clothes] 童锁状态已上报:', locked ? 'lock' : 'unlock'))
+        .catch(err => console.error('[Clothes] 童锁状态上报失败:', err));
+    }
+  },
+
+  // ========== 新增功能二：定时自动关闭 ==========
+  // 用户可自定定时时间（精确到小时:分钟），到点后自动收回晾衣架并关闭窗户。
+  // 适配 <picker mode="time">，e.detail.value 形如 "08:30"
+  onSetTimer(e) {
+    if (this.data.childLock) {
+      wx.showToast({ title: '童锁已开启，无法设置定时', icon: 'none', duration: 1500 });
+      return;
+    }
+    let value = (e && e.detail && typeof e.detail.value === 'string') ? e.detail.value : null;
+    if (!value) {
+      value = `${this.data.timerHour}:${this.data.timerMinute}`;
+    }
+    const parts = value.split(':');
+    if (parts.length < 2) {
+      wx.showToast({ title: '时间格式错误', icon: 'none', duration: 1500 });
+      return;
+    }
+    const hour = parseInt(parts[0], 10);
+    const minute = parseInt(parts[1], 10);
+    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      wx.showToast({ title: '时间超出范围', icon: 'none', duration: 1500 });
+      return;
+    }
+    this.scheduleClose(hour, minute);
+  },
+
+  // 计算到目标时间的延迟并设置定时器（今天已过则顺延到明天）
+  scheduleClose(hour, minute) {
+    if (this._timerHandle) {
+      clearTimeout(this._timerHandle);
+      this._timerHandle = null;
+    }
+
+    const now = new Date();
+    const target = new Date();
+    target.setHours(hour, minute, 0, 0);
+    if (target.getTime() <= now.getTime()) {
+      target.setDate(target.getDate() + 1);
+    }
+    const delay = target.getTime() - now.getTime();
+    const text = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+
+    this._timerHandle = setTimeout(() => {
+      this._timerHandle = null;
+      this.setData({ timerEnabled: false, timerText: '' });
+      this.executeScheduledClose();
+    }, delay);
+
+    this.setData({
+      timerEnabled: true,
+      timerHour: String(hour).padStart(2, '0'),
+      timerMinute: String(minute).padStart(2, '0'),
+      timerText: text
+    });
+
+    wx.showToast({ title: `已设定 ${text} 自动关闭`, icon: 'none', duration: 1500 });
+  },
+
+  // 定时到点后执行：收回晾衣架 + 关闭窗户（受童锁约束）
+  executeScheduledClose() {
+    Promise.resolve()
+      .then(() => this.sendCommand('hanger', 'retract', '定时收衣架'))
+      .then(() => this.sendCommand('window', 'retract', '定时关窗'))
+      .then(() => {
+        wx.showToast({ title: '定时任务：已关闭衣架和窗户', icon: 'none', duration: 2000 });
+      })
+      .catch((err) => {
+        console.error('[Clothes] 定时关闭执行失败:', err);
+      });
+  },
+
+  // 取消已设定的定时任务
+  onClearTimer() {
+    if (this._timerHandle) {
+      clearTimeout(this._timerHandle);
+      this._timerHandle = null;
+    }
+    this.setData({ timerEnabled: false, timerText: '' });
+    wx.showToast({ title: '已取消定时', icon: 'none', duration: 1500 });
   }
 });

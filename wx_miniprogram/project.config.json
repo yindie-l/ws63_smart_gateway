@@ -37,7 +37,7 @@
         "disableSWC": true
     },
     "compileType": "miniprogram",
-    "libVersion": "3.3.4",
+    "libVersion": "3.16.2",
     "appid": "wxfcee622a5e204e12",
     "projectname": "sle-gateway",
     "condition": {},

@@ -51,7 +51,7 @@
 
     <!-- 衣架控制按钮组 -->
     <view class="btn-group">
-      <view class="control-btn btn-extend {{btnHangerActive ? 'btn-pressed' : ''}}"
+      <view class="control-btn btn-extend {{btnHangerActive ? 'btn-pressed' : ''}} {{childLock ? 'ctrl-locked' : ''}}"
             bindtap="onExtendHanger">
         <view class="btn-bg"></view>
         <view class="btn-content">
@@ -60,7 +60,7 @@
         </view>
         <view class="btn-glow-ring"></view>
       </view>
-      <view class="control-btn btn-retract {{btnHangerActive ? 'btn-pressed' : ''}}"
+      <view class="control-btn btn-retract {{btnHangerActive ? 'btn-pressed' : ''}} {{childLock ? 'ctrl-locked' : ''}}"
             bindtap="onRetractHanger">
         <view class="btn-bg"></view>
         <view class="btn-content">
@@ -84,7 +84,7 @@
 
     <!-- 窗户控制按钮组 -->
     <view class="btn-group">
-      <view class="control-btn btn-extend {{btnWindowActive ? 'btn-pressed' : ''}}"
+      <view class="control-btn btn-extend {{btnWindowActive ? 'btn-pressed' : ''}} {{childLock ? 'ctrl-locked' : ''}}"
             bindtap="onOpenWindow">
         <view class="btn-bg"></view>
         <view class="btn-content">
@@ -93,7 +93,7 @@
         </view>
         <view class="btn-glow-ring"></view>
       </view>
-      <view class="control-btn btn-retract {{btnWindowActive ? 'btn-pressed' : ''}}"
+      <view class="control-btn btn-retract {{btnWindowActive ? 'btn-pressed' : ''}} {{childLock ? 'ctrl-locked' : ''}}"
             bindtap="onCloseWindow">
         <view class="btn-bg"></view>
         <view class="btn-content">
@@ -102,6 +102,37 @@
         </view>
         <view class="btn-glow-ring"></view>
       </view>
+    </view>
+  </view>
+
+  <!-- ============ 安全与定时（新增） ============ -->
+  <view class="section safe-section">
+    <view class="section-title">安全与定时</view>
+
+    <!-- 童锁 -->
+    <view class="lock-row">
+      <view class="lock-info">
+        <text class="lock-title">童锁</text>
+        <text class="lock-desc">{{childLock ? '已开启：所有控制功能已锁定' : '已关闭：功能可正常使用'}}</text>
+      </view>
+      <switch checked="{{childLock}}" bindchange="onToggleChildLock" color="#4a90d9" />
+    </view>
+
+    <!-- 定时自动关闭 -->
+    <view class="timer-row">
+      <view class="timer-info">
+        <text class="timer-title">定时自动关闭</text>
+        <text class="timer-desc">{{timerEnabled ? '已设定 ' + timerText + ' 自动关闭衣架和窗户' : '设定时间后自动收回衣架并关窗'}}</text>
+      </view>
+      <picker mode="time" value="{{timerHour}}:{{timerMinute}}" bindchange="onSetTimer" disabled="{{childLock}}">
+        <view class="timer-picker {{childLock ? 'ctrl-disabled' : ''}}">
+          <text>{{timerEnabled ? timerText : '选择时间'}}</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{timerEnabled}}" class="timer-cancel" bindtap="onClearTimer">
+      <text>取消定时</text>
     </view>
   </view>
 

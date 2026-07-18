@@ -368,6 +368,17 @@
   opacity: 0.75;
 }
 
+/* 童锁开启时控制按钮置灰并禁用点击 */
+.control-btn.ctrl-locked {
+  filter: grayscale(100%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.control-btn.ctrl-locked .btn-glow-ring {
+  animation: none;
+}
+
 .btn-bg {
   position: absolute;
   top: 0;
@@ -470,4 +481,72 @@
 .ir-text {
   font-size: 24rpx;
   color: #6b7d95;
+}
+
+/* ============ 安全与定时（新增） ============ */
+.safe-section {
+  align-items: stretch;
+}
+
+.lock-row,
+.timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #eef2f8;
+}
+
+.lock-info,
+.timer-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.lock-title,
+.timer-title {
+  font-size: 28rpx;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.lock-desc,
+.timer-desc {
+  font-size: 22rpx;
+  color: #8a98ab;
+  margin-top: 6rpx;
+}
+
+.timer-picker {
+  padding: 14rpx 36rpx;
+  border-radius: 30rpx;
+  background: linear-gradient(135deg, #4a90d9, #7bb3f0);
+  box-shadow: 0 4rpx 16rpx rgba(74, 144, 217, 0.2);
+}
+
+.timer-picker text {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.ctrl-disabled {
+  opacity: 0.4;
+}
+
+.timer-cancel {
+  align-self: center;
+  margin-top: 24rpx;
+  padding: 12rpx 50rpx;
+  border-radius: 30rpx;
+  background: rgba(245, 34, 45, 0.08);
+  border: 1rpx solid rgba(245, 34, 45, 0.2);
+}
+
+.timer-cancel text {
+  font-size: 26rpx;
+  color: #f5222d;
 }
