@@ -1,0 +1,11 @@
+#ifndef WIFI_SLE_COEXIST_SERVER_H
+#define WIFI_SLE_COEXIST_SERVER_H
+
+#include "sle_ssap_server.h"
+#include "sle_window_protocol.h"
+
+#define SLE_UUID_SERVER_SERVICE  SLE_UUID_WINDOW_SERVICE
+#define SLE_UUID_SERVER_PROPERTY SLE_UUID_WINDOW_PROPERTY
+#define SLE_UUID_SERVER_NTF_REPORT 0x1122
+
+#endif /* WIFI_SLE_COEXIST_SERVER_H */
